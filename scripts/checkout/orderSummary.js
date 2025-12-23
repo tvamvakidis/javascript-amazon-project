@@ -1,34 +1,18 @@
 import { cart, removeFromCart, updateDeliveryOption } from '../../data/cart.js';
-import { products } from '../../data/products.js';
+import { getProduct } from '../../data/products.js';
 import { formatCurrency } from '../utils/money.js';
-import dayjs from 'https://esm.sh/dayjs';
-import { deliveryOptions } from '../../data/deliveryOptions.js';
+import { deliveryOptions, getDeliveryOption } from '../../data/deliveryOptions.js';
+import { renderPaymentSummary } from './paymentSummary.js';
+import { getDeliveryDate } from '../utils/deliveryDate.js';
 
 export function renderOrderSummary() {
 
   let cartSummaryHTML = '';
 
   cart.forEach((cartItem) => {
-    const productId = cartItem.productId;
-
-    let matchingProduct;
-
-    products.forEach((product) => {
-      if (product.id === productId) {
-        matchingProduct = product;
-      }
-    });
-
-    const deliveryOptionId = cartItem.deliveryOptionId;
-
-    let dateString;
-
-    deliveryOptions.forEach((option) => {
-      if(option.id === deliveryOptionId) {
-        dateString = dayjs().add(option.deliveryDays, 'days');
-        dateString = dateString.format('dddd, MMMM D');
-      }
-    });
+    const matchingProduct = getProduct(cartItem.productId);
+    const deliveryOption = getDeliveryOption(cartItem.deliveryOptionId);
+    const dateString = getDeliveryDate(deliveryOption.deliveryDays);
 
     cartSummaryHTML += `
       <div class="cart-item-container 
@@ -79,12 +63,8 @@ export function renderOrderSummary() {
     let html = '';
 
     deliveryOptions.forEach((deliveryOption) => {
-      const today = dayjs();
-      const deliveryDate = today.add(
-        deliveryOption.deliveryDays,
-        'days'
-      );
-      const dateString = deliveryDate.format('dddd, MMMM D');
+      const dateString = getDeliveryDate(deliveryOption.deliveryDays);
+
       const priceString = deliveryOption.priceCents === 0
         ? 'FREE' : `$${formatCurrency(deliveryOption.priceCents)} -`;
       const isChecked = deliveryOption.id === cartItem.deliveryOptionId;
@@ -122,11 +102,12 @@ export function renderOrderSummary() {
       })
     });
 
-    document.querySelectorAll('.js-delivery-option')
-      .forEach((element) => {
-        element.addEventListener('click', () => {
-          updateDeliveryOption(element.dataset.productId, element.dataset.deliveryOptionId);
-          renderOrderSummary();
-        });
+  document.querySelectorAll('.js-delivery-option')
+    .forEach((element) => {
+      element.addEventListener('click', () => {
+        updateDeliveryOption(element.dataset.productId, element.dataset.deliveryOptionId);
+        renderOrderSummary();
+        renderPaymentSummary();
       });
+    });
 }
