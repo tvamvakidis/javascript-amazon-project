@@ -1,15 +1,16 @@
-import { cart, addToCart } from '../data/cart.js';
-import { products, loadProducts } from '../data/products.js';
-import { formatCurrency } from './utils/money.js';
+import { cart, addToCart, getCartQuantity } from '../data/cart.js';
+import { products, loadProductsFetch } from '../data/products.js';
 
-loadProducts(renderProductsGrid);
+try {
+  await loadProductsFetch();
+} catch(error) {
+  console.log('Unexpected error. Please try again later.');
+}
 
-function renderProductsGrid() {
+let productsHTML = '';
 
-  let productsHTML = '';
-
-  products.forEach((product) => {
-    const html = `
+products.forEach((product) => {
+  const html = `
       <div class="product-container">
         <div class="product-image-container">
           <img class="product-image"
@@ -63,26 +64,26 @@ function renderProductsGrid() {
       </div>
     `;
 
-    productsHTML += html;
+  productsHTML += html;
 
+});
+
+document.querySelector('.js-products-grid').innerHTML = productsHTML;
+document.querySelector('.js-cart-quantity').innerHTML = getCartQuantity();
+
+function updateCartQuantity() {
+  let cartQuantity = 0;
+  cart.forEach((cartItem) => {
+    cartQuantity += cartItem.quantity;
   });
 
-  document.querySelector('.js-products-grid').innerHTML = productsHTML;
-
-  function updateCartQuantity() {
-    let cartQuantity = 0;
-    cart.forEach((cartItem) => {
-      cartQuantity += cartItem.quantity;
-    });
-
-    document.querySelector('.js-cart-quantity').innerHTML = cartQuantity;
-  }
-
-  document.querySelectorAll('.js-add-to-cart').forEach((button) => {
-    button.addEventListener('click', () => {
-      const productId = button.dataset.productId;
-      addToCart(productId);
-      updateCartQuantity();
-    });
-  });
+  document.querySelector('.js-cart-quantity').innerHTML = cartQuantity;
 }
+
+document.querySelectorAll('.js-add-to-cart').forEach((button) => {
+  button.addEventListener('click', () => {
+    const productId = button.dataset.productId;
+    addToCart(productId);
+    updateCartQuantity();
+  });
+});

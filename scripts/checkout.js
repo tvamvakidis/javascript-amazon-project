@@ -1,7 +1,7 @@
 import { renderOrderSummary } from "./checkout/orderSummary.js";
 import { renderPaymentSummary } from "./checkout/paymentSummary.js";
 import { loadProductsFetch } from "../data/products.js";
-import { loadCart } from "../data/cart.js";
+import { loadCart, getCartQuantity } from "../data/cart.js";
 
 async function LoadPage() {
 
@@ -20,6 +20,8 @@ async function LoadPage() {
   renderPaymentSummary();
 }
 LoadPage()
+
+document.querySelector('.js-checkout-item-quantity').innerHTML = getCartQuantity();
 
 /*
 Promise.all([

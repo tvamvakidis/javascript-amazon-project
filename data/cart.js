@@ -82,6 +82,14 @@ export function loadCart(fun) {
   xhr.send();
 }
 
+export function getCartQuantity() {
+  let quantity = 0;
+  cart.forEach((cartItem) => {
+    quantity = quantity + cartItem.quantity;
+  });
+  return quantity;
+}
+
 export function loadCartFetch() {
 
   const promise = fetch(
